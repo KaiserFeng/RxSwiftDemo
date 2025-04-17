@@ -12,16 +12,19 @@ import RxSwift
 import RxCocoa
 
 class ViewController: UIViewController {
-
+    
     private let disposeBag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+//        testRecursiveLock()
 //        testCreateObservable()
-        testTransformOperators()
+//        testTransformOperators()
+        testFilteringConditionalOperators()
     }
-
-
+    
+    
     func testCreateObservable() {
         let ob = Observable<String>.create { observer in
             observer.onNext("Hello world")
@@ -44,10 +47,21 @@ class ViewController: UIViewController {
     
     /// 映射操作符
     func testTransformOperators() {
+        testMapTransformOperators()
+        testFlatMapTransformOperators()
+        testFlatMapLatestTransformOperators()
+        testFlatMapFirstTransformOperators()
+        testScanTransformOperators()
+    }
+    
+    /// 过滤操作符
+    func testFilteringConditionalOperators() {
+        
+    }
+    
+    func testMapTransformOperators() {
         // ***** map: 转换闭包应用于可观察序列发出的元素，并返回转换后的元素的新可观察序列。
         print("*****map*****")
-        /// 生成一个 ObservableSequence<Array<Int>> 序列
-//        let ob = Observable.of(1, 2, 3, 4, 5)
         /// 1、通过 map 操作符，ObservableSequence<Array<Int>> 序列 映射成一个新的 Map<Array<Int>> 序列
         /// 其中 ObservableSequence<Array<Int>> 序列 称为 源序列，Map<Array<Int>> 序列 称为 目标序列
         /// map操作，是将 ObservableSequence<Array<Int>> 源序列 和 map 的闭包 存储到 Map<Array<Int>> 目标序列中
@@ -94,41 +108,46 @@ class ViewController: UIViewController {
         /// 3、子类实现 run(observer, cancel:) 方法，再次重复 2 步骤，直到最后的 AnonymousObserver 。
         /// 4、AnonymousObserver 调用 eventHandler 闭包，闭包中的参数就是目标序列中的元素。
         /// 代码编写逻辑从上到下；执行顺序从下到上后再从上到下。各个环节的调用关系是相互独立的，可增可减。函数式编程思想。
-//        let _ = ob.filter({ num in
-//            num > 2
-//        }).map { num in
-//            num + 2
-//        }.subscribe(onNext: { next in
-//            print(next)
-//        }).disposed(by: disposeBag)
-        
+        /// 生成一个 ObservableSequence<Array<Int>> 序列
+        let ob = Observable.of(1, 2, 3, 4, 5)
+        let _ = ob.filter({ num in
+            num > 2
+        }).map { num in
+            num + 2
+        }.subscribe(onNext: { next in
+            print(next)
+        }).disposed(by: disposeBag)
+    }
+    
+    func testFlatMapTransformOperators() {
         print("*****flatMap*****")
         /// flatMap: 将一个可观察序列中的元素转换为另一个可观察序列，并将所有这些可观察序列合并为一个新的可观察序列。
         /// flatMap 是一个高阶函数，接收一个闭包作为参数，闭包接收一个元素并返回一个可观察序列。
         /// flatMap 会将所有这些可观察序列合并为一个新的可观察序列。
         /// flatMap 是一个异步操作符，它会将所有的可观察序列合并为一个新的可观察序列。
-//        let boy = LGPlayer(score: 90)
-//        let girl = LGPlayer(score: 80)
-//        let player = BehaviorSubject(value: boy)
-//        
-//        player.flatMap { player in
-//            player.score
-//        }.subscribe(onNext: { score in
-//            print(score)
-//        }).disposed(by: disposeBag)
-//        
-//        boy.score.onNext(60)
-//        player.onNext(girl)
-//        boy.score.onNext(50)
-//        boy.score.onNext(40)
-//        girl.score.onNext(10)
-//        girl.score.onNext(0)
+        let boy = LGPlayer(score: 90)
+        let girl = LGPlayer(score: 80)
+        let player = BehaviorSubject(value: boy)
         
+        player.flatMap { player in
+            player.score
+        }.subscribe(onNext: { score in
+            print(score)
+        }).disposed(by: disposeBag)
+        
+        boy.score.onNext(60)
+        player.onNext(girl)
+        boy.score.onNext(50)
+        boy.score.onNext(40)
+        girl.score.onNext(10)
+        girl.score.onNext(0)
+    }
+    
+    func testFlatMapLatestTransformOperators() {
         print("*****flatMapLatest*****")
         let boyLatest = LGPlayer(score: 90)
         let girlLatest = LGPlayer(score: 80)
         let playerLatest = BehaviorSubject(value: boyLatest)
-        
         
         /// BehaviorSubject序列 是源序列，FlatMapLatest序列是 目标序列，
         /// FlatMapLatest 生成 MapSwitchSink-> SwitchSink 对象，存储了闭包和 观察者对象。
@@ -145,18 +164,38 @@ class ViewController: UIViewController {
         // ✅ 输出 60
         boyLatest.score.onNext(60)
         boyLatest.score.onNext(61)
-        boyLatest.score.onNext(62)
-        boyLatest.score.onNext(63)
-        boyLatest.score.onNext(64)
-        boyLatest.score.onNext(65)
-        boyLatest.score.onNext(66)
         // 第三阶段：切换到girl
-        playerLatest.onNext(girlLatest) // 切换到girl，取消boy的订阅
+        playerLatest.onNext(girlLatest) // 切换到girl 新序列，取消boy 旧序列的订阅
         boyLatest.score.onNext(50) // 被忽略
         boyLatest.score.onNext(40) // 被忽略
         girlLatest.score.onNext(10)  // ✅ 输出 10
         girlLatest.score.onNext(5)  // ✅ 输出 5
+    }
+    
+    func testFlatMapFirstTransformOperators() {
+        print("*****flatMapFirst*****")
+        let boyFirst = LGPlayer(score: 90)
+        let girlFirst = LGPlayer(score: 80)
+        let playerFirst = BehaviorSubject(value: boyFirst)
         
+        /// flatMapFirst 的关键特点是它只处理第一个活跃序列,即使后续有新的序列(girlFirst)加入也会被忽略,直到当前活跃序列完成。这对于防止重复操作很有用
+        playerFirst.flatMapFirst { player in
+            player.score.asObservable()
+        }.subscribe(onNext: { score in
+            print(score)
+        }).disposed(by: disposeBag)
+        
+        /// ObserverType.onNext ----> BehaviorSubject.on ----> MergeSinkIter.on ----> Sink.forwardOn ----> ObserverBase.on ----> AnonomousObserver.on ----> eventHandler闭包
+        boyFirst.score.onNext(60)      // ✅ 输出 60
+        boyFirst.score.onNext(61)      // ✅ 输出 61
+        playerFirst.onNext(girlFirst)  // 忽略切换,因为有一个活跃序列 boyFirst，当boyFirst完成时，才会切换到girlFirst
+        boyFirst.score.onNext(50)      // ✅ 输出 50
+        boyFirst.score.onNext(40)      // ✅ 输出 40
+        girlFirst.score.onNext(10)     // 被忽略
+        girlFirst.score.onNext(5)      // 被忽略
+    }
+    
+    func testScanTransformOperators() {
         print("*****scan*****")
         /// scan: 将一个初始值和一个可观察序列中的元素组合在一起，返回一个新的可观察序列。
         /// scan 是一个高阶函数，接收两个参数，一个初始值和一个闭包。闭包接收两个参数，一个是初始值，一个是可观察序列中的元素，通过计算返回一个新的值。
@@ -172,6 +211,19 @@ class ViewController: UIViewController {
         })
         .disposed(by: disposeBag)
     }
+    
+    func testRecursiveLock() {
+        let safeManager = SafeManager()
+        safeManager.methodA()
+        
+        DispatchQueue.global().async {
+            safeManager.modify()
+        }
+        
+        DispatchQueue.global().async {
+            safeManager.modify()
+        }
+    }
 }
 
 struct LGPlayer {
@@ -179,6 +231,40 @@ struct LGPlayer {
     
     init(score: Int) {
         self.score = BehaviorSubject<Int>(value: score)
+    }
+}
+
+class SafeManager {
+    private let lock = NSRecursiveLock()
+    private var data = 0
+    
+    func methodA() {
+        lock.lock()
+        defer { lock.unlock() }
+        print("methodA 1")
+        methodB()
+        print("methodA 2")
+    }
+    
+    func methodB() {
+        lock.lock()
+        defer { lock.unlock() }
+        print("methodB")
+    }
+    
+    func modify() {
+        lock.lock()
+        defer { lock.unlock() }
+        innerModify()   // 同一线程可重入
+        data += 1       // 数据修改被锁保护
+        print("data = \(data), thread = \(Thread.current)")
+    }
+    
+    private func innerModify() {
+        lock.lock()
+        defer { lock.unlock() }
+        data += 2       // 数据修改被锁保护
+        print("data = \(data), thread = \(Thread.current)")
     }
 }
 
