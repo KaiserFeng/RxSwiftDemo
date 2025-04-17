@@ -21,7 +21,7 @@ class ViewController: UIViewController {
 //        testRecursiveLock()
 //        testCreateObservable()
 //        testTransformOperators()
-        testFilteringConditionalOperators()
+        testConditionalOperators()
     }
     
     
@@ -55,7 +55,8 @@ class ViewController: UIViewController {
     }
     
     /// 过滤操作符
-    func testFilteringConditionalOperators() {
+    func testConditionalOperators() {
+        testFilterConditionalOperators()
         
     }
     
@@ -210,6 +211,158 @@ class ViewController: UIViewController {
             print(next)      // 2+10=12, 12+100=112, 112+1000=1112, 1112+10000=11112
         })
         .disposed(by: disposeBag)
+    }
+    
+    func testFilterConditionalOperators() {
+        print("*****filter*****")
+        
+        /// filter 是一个高阶函数，接收一个闭包作为参数，闭包接收一个元素并返回一个布尔值。
+        /// filter 会将所有满足条件的元素组合在一起，返回一个新的可观察序列。
+        Observable.of(1, 2, 3, 4, 5)
+            .filter { item in
+                item > 2
+            }.subscribe(onNext: { value in
+                print(value)
+            }).disposed(by: disposeBag)
+        
+        print("*****distinctUntilChanged*****")
+        /// distinctUntilChanged: 过滤掉连续重复的元素，只保留第一个元素。
+        /// distinctUntilChanged 是一个高阶函数，接收一个闭包作为参数，闭包接收两个元素并返回一个布尔值。
+        /// distinctUntilChanged 会将所有连续重复的元素过滤掉，只保留第一个元素。
+        Observable.of(1, 2, 1, 2, 3, 3, 4, 5, 6, 2)
+            .distinctUntilChanged()
+            .subscribe { value in
+                print(value)
+            }.disposed(by: disposeBag)
+
+        print("*****elementAt*****")
+        /// elementAt: 过滤掉所有元素，只保留指定索引的元素。
+        /// elementAt 是一个高阶函数，接收一个索引作为参数，返回一个新的可观察序列。
+        Observable.of(1, 2, 3, 4, 5)
+            .element(at: 3)
+            .subscribe(onNext: { value in
+                print(value)
+            }).disposed(by: disposeBag)
+        
+        print("*****single*****")
+        /// single: 过滤掉所有元素，只保留唯一的元素。返回满足条件的第一个元素，否则返回error。发出多个元素时，返回error。
+        /// single 是一个高阶函数，接收一个闭包作为参数，闭包接收两个元素并返回一个布尔值。
+        Observable.of("SG","KF", "FZ")
+            .single()
+            .subscribe(onNext: {value in
+                print(value)
+            }).disposed(by: disposeBag)
+        
+        Observable.of("SG","KF", "FZ")
+            .single({ value in
+                value == "MC" // 过滤条件
+            })
+            .subscribe(onNext: { value in
+                print(value)
+            }, onError: { error in
+                print(error)
+            }).disposed(by: disposeBag)
+        
+        print("*****take*****")
+        /// take: 过滤掉所有元素，只保留前 n 个元素。
+        /// take 是一个高阶函数，接收一个元素作为参数，将前 n 个元素保留，其他元素过滤掉。
+        Observable.of(1, 2, 3, 4, 5)
+            .take(2)
+            .subscribe(onNext: { value in
+                print(value)
+            }).disposed(by: disposeBag)
+        
+        print("*****takeLast*****")
+        /// takeLast: 过滤掉所有元素，只保留最后的元素。
+        /// takeLast 是一个高阶函数，接收一个元素作为参数
+        /// 将所有元素入队，超过指定元素数时，出队一个元素。直到最后。
+        Observable.of(1, 2, 3, 4, 5)
+            .takeLast(3)
+            .subscribe(onNext: { value in
+                print(value)
+            }).disposed(by: disposeBag)
+        
+#warning("当 谓词首次返回 false 时，立即完成序列")
+        print("*****takeWhile*****")
+        /// takeWhile: 过滤元素，保留满足条件的元素。当 谓词首次返回 false 时，立即完成序列
+        /// takeWhile 是一个高阶函数，接收一个闭包作为参数，闭包接收一个元素并返回一个布尔值。
+
+        Observable.of(1, 2, 3, 4, 5)
+            .take(while: { value in
+                value > 3
+            }).subscribe(onNext: { value in
+                print(value)
+            }).disposed(by: disposeBag)
+        
+        print("*****takeUntil*****")
+        /// takeUntil: 当另外一个序列发出元素时，源序列停止发送元素。
+        /// takeUntil 是一个高阶函数，接收一个序列作为参数，当另外一个序列发出元素时，源序列停止发送元素。
+        /// 当 另外一个序列发送元素时，会让源序列 发送一个 onCompleted 事件，源序列停止发送元素。
+        /// 实际应用场景：当我点击一个按钮的时候，就终止某些操作。
+        let sourceSequence = PublishSubject<String>()
+        let referenceSequence = PublishSubject<String>()
+        
+        sourceSequence.take(until: referenceSequence)
+            .subscribe(onNext: { value in
+                print(value)
+            }).disposed(by: disposeBag)
+        
+        sourceSequence.onNext("KF")
+        sourceSequence.onNext("MC")
+        sourceSequence.onNext("FZ")
+
+        referenceSequence.onNext("CL") // 条件一出来,下面就走不了
+        
+        sourceSequence.onNext("SG")
+        sourceSequence.onNext("LV")
+        
+        print("*****takeUntil*****")
+        Observable.of("SG","KF", "FZ")
+            .take(until: { value in
+                value == "KF" // 过滤条件
+            }).subscribe(onNext: { value in
+                print(value)
+            }, onError: { error in
+                print(error)
+            }).disposed(by: disposeBag)
+        
+        print("*****skip*****")
+        /// skip: 过滤掉前 n 个元素。
+        /// skip 是一个高阶函数，接收一个元素作为参数，将前 n 个元素过滤掉，其他元素保留。
+        /// 这个要重点,应用非常频繁 不用解释 textfiled 都会有默认序列产生
+        Observable.of(1, 2, 3, 4, 5)
+            .skip(2)
+            .subscribe(onNext: { value in
+                print(value)
+            }).disposed(by: disposeBag)
+        
+        print("*****skipWhile*****")
+#warning("当 谓词首次返回 false 时，后续元素全部输出到新的序列中")
+        Observable.of(4, 3, 5, 2, 6)
+            .skip(while: {value in
+                value > 3
+            }).subscribe(onNext: { value in
+                print(value)
+            }).disposed(by: disposeBag)
+        
+        print("*****skipUntil*****")
+        let sourceSeq = PublishSubject<String>()
+        let referenceSeq = PublishSubject<String>()
+        
+        sourceSeq
+            .skip(until: referenceSeq)
+            .subscribe(onNext: { print($0) })
+            .disposed(by: disposeBag)
+        
+        // 没有条件命令 下面走不了
+        sourceSeq.onNext("KF")
+        sourceSeq.onNext("FZ")
+        sourceSeq.onNext("MC")
+        
+        referenceSeq.onNext("CL") // 条件一出来,下面就可以走了,内部将 bool 值置为 true。
+        
+        sourceSeq.onNext("LV")
+        sourceSeq.onNext("SG")
     }
     
     func testRecursiveLock() {
