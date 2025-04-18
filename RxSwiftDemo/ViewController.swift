@@ -21,7 +21,8 @@ class ViewController: UIViewController {
 //        testRecursiveLock()
 //        testCreateObservable()
 //        testTransformOperators()
-        testConditionalOperators()
+//        testConditionalOperators()
+        testCombinationOperators()
     }
     
     
@@ -57,7 +58,104 @@ class ViewController: UIViewController {
     /// 过滤操作符
     func testConditionalOperators() {
         testFilterConditionalOperators()
+    }
+    
+    /// 组合操作符
+    func testCombinationOperators() {
+        print("*****startWith*****")
+        /// startWith: 在序列的开头添加一个元素。
+        /// startWith 是一个高阶函数，接收一个元素作为参数，将元素添加到序列的开头。
+        /// 效果 CabBA123
+//        Observable.of("1", "2", "3")
+//            .startWith("A")
+//            .startWith("B")
+//            .startWith("C", "a", "b")
+//            .subscribe(onNext: { print($0) })
+//            .disposed(by: disposeBag)
         
+        print("*****merge*****")
+        /// merge: 将多个可观察序列合并为一个新的可观察序列。
+        /// merge 是一个高阶函数，接收多个可观察序列作为参数，将多个可观察序列合并为一个新的可观察序列。
+//        let subject1 = PublishSubject<String>()
+//        let subject2 = PublishSubject<String>()
+//        Observable.of(subject1, subject2)
+//            .merge()
+//            .subscribe(onNext: { print($0) })
+//            .disposed(by: disposeBag)
+//        
+//        subject1.onNext("K")    // 输出 K
+//        subject1.onNext("a")    // 输出 a
+//        subject2.onNext("i")    // 输出 i
+//        subject2.onNext("s")    // 输出 s
+//        subject1.onNext("e")    // 输出 e
+//        subject2.onNext("r")    // 输出 r
+        
+        print("*****zip*****")
+        /// zip: 将多个可观察序列合并为一个新的可观察序列。
+        /// zip 是一个高阶函数，接收多个可观察序列作为参数，将多个可观察序列合并为一个新的可观察序列。
+        /// .onNext() 就是入队操作，当 两个序列都入队了元素时，才会出队一对数据，根据 FIFO匹配出队的元素。
+        /// 等待所有源序列都产生元素后才组合输出
+        /// 按索引位置一一对应进行组合
+        /// 只有两个序列同时有值的时候才会响应,否则存值
+//        let stringSubject = PublishSubject<String>()
+//        let intSubject = PublishSubject<Int>()
+//        
+//        Observable.zip(stringSubject, intSubject) { stringElement, intElement in
+//            "\(stringElement) \(intElement)"
+//        }.subscribe(onNext: { value in
+//            print(value)
+//        }).disposed(by: disposeBag)
+//        
+//        stringSubject.onNext("K")
+//        stringSubject.onNext("M")
+//        stringSubject.onNext("F") // 到这里存储了 K M F 但是不会响应,除非另一个响应
+//
+//        intSubject.onNext(1) // 勾出一个 输出 K 1
+//        intSubject.onNext(2) // 勾出另一个 输出 M 2
+//        stringSubject.onNext("i") // 存一个
+//        intSubject.onNext(3) // 勾出一个 输出 F 3
+//        intSubject.onNext(4) // 勾出一个 输出 i 4
+//        
+//        stringSubject.onNext("C") // 存一个
+//        intSubject.onNext(5) // 勾出一个  输出 C 5
+        
+        print("*****combineLatest*****")
+        /// combineLatest: 将多个可观察序列合并为一个新的可观察序列。
+        /// combineLatest 是一个高阶函数，接收多个可观察序列作为参数，将多个可观察序列合并为一个新的可观察序列。
+        /// 相对于zip来说，combineLatest 会覆盖旧元素，只保留新元素，当源序列都有值的时候，才会响应。
+        /// 应用非常频繁: 比如账户和密码同时满足->才能登陆. 不关系账户密码怎么变化的只要查看最后有值就可以 loginEnable
+//        let stringSub = PublishSubject<String>()
+//        let intSub = PublishSubject<Int>()
+//        
+//        Observable.combineLatest(stringSub, intSub) { strElement, intElement in
+//            "\(strElement) \(intElement)"
+//        }
+//        .subscribe(onNext: { print($0) })
+//        .disposed(by: disposeBag)
+//        
+//        stringSub.onNext("K")   // 保存 K
+//        stringSub.onNext("M")   // 覆盖 K，保存 M
+//        intSub.onNext(1) // stringSub 有值，输出 M 1
+//        intSub.onNext(2) // 覆盖 1， 保存 2，stringSub 有值，输出 M 2
+//        stringSub.onNext("F") // 覆盖 M，保存 F，intSub 有值，输出 F 2
+        
+        print("*****switchLatest*****")
+        /// switchLatest: 将一个可观察序列中的元素转换为另一个可观察序列，并将所有这些可观察序列合并为一个新的可观察序列。
+        /// switchLatest 是一个高阶函数，接收一个闭包作为参数，闭包接收一个元素并返回一个可观察序列。
+        let switchLatestSub1 = BehaviorSubject(value: "K")
+        let switchLatestSub2 = BehaviorSubject(value: "1")
+        let switchLatestSub = BehaviorSubject(value: switchLatestSub1)
+        
+        switchLatestSub.switchLatest().subscribe(onNext: { print($0) }).disposed(by: disposeBag)
+        
+        switchLatestSub1.onNext("F")  // ✅输出 F
+        switchLatestSub1.onNext("M")  // ✅输出 M
+        switchLatestSub2.onNext("2")  // 不会输出
+        switchLatestSub2.onNext("3") // 2-3都会不会监听,但是默认保存由 2覆盖1 3覆盖2
+        switchLatestSub.onNext(switchLatestSub2) // 切换到 switchLatestSub2 输出 3
+        switchLatestSub1.onNext("*")  // 不会输出
+        switchLatestSub1.onNext("C") // 原理同上面 下面如果再次切换到 switchLatestSub1会打印出 C
+        switchLatestSub2.onNext("4")  // 输出 4
     }
     
     func testMapTransformOperators() {
