@@ -13,16 +13,18 @@ import RxCocoa
 
 class ViewController: UIViewController {
     
-    private let disposeBag = DisposeBag()
+    private var disposeBag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        testRecursiveLock()
-//        testCreateObservable()
-//        testTransformOperators()
-//        testConditionalOperators()
-        testCombinationOperators()
+        //        testRecursiveLock()
+        //        testCreateObservable()
+        //        testTransformOperators()
+        //        testConditionalOperators()
+        //        testCombinationOperators()
+        //        testMathematicalAggregateOperators()
+        testConnectableOperators()
     }
     
     
@@ -66,29 +68,29 @@ class ViewController: UIViewController {
         /// startWith: 在序列的开头添加一个元素。
         /// startWith 是一个高阶函数，接收一个元素作为参数，将元素添加到序列的开头。
         /// 效果 CabBA123
-//        Observable.of("1", "2", "3")
-//            .startWith("A")
-//            .startWith("B")
-//            .startWith("C", "a", "b")
-//            .subscribe(onNext: { print($0) })
-//            .disposed(by: disposeBag)
+        Observable.of("1", "2", "3")
+            .startWith("A")
+            .startWith("B")
+            .startWith("C", "a", "b")
+            .subscribe(onNext: { print($0) })
+            .disposed(by: disposeBag)
         
         print("*****merge*****")
         /// merge: 将多个可观察序列合并为一个新的可观察序列。
         /// merge 是一个高阶函数，接收多个可观察序列作为参数，将多个可观察序列合并为一个新的可观察序列。
-//        let subject1 = PublishSubject<String>()
-//        let subject2 = PublishSubject<String>()
-//        Observable.of(subject1, subject2)
-//            .merge()
-//            .subscribe(onNext: { print($0) })
-//            .disposed(by: disposeBag)
-//        
-//        subject1.onNext("K")    // 输出 K
-//        subject1.onNext("a")    // 输出 a
-//        subject2.onNext("i")    // 输出 i
-//        subject2.onNext("s")    // 输出 s
-//        subject1.onNext("e")    // 输出 e
-//        subject2.onNext("r")    // 输出 r
+        let subject1 = PublishSubject<String>()
+        let subject2 = PublishSubject<String>()
+        Observable.of(subject1, subject2)
+            .merge()
+            .subscribe(onNext: { print($0) })
+            .disposed(by: disposeBag)
+        
+        subject1.onNext("K")    // 输出 K
+        subject1.onNext("a")    // 输出 a
+        subject2.onNext("i")    // 输出 i
+        subject2.onNext("s")    // 输出 s
+        subject1.onNext("e")    // 输出 e
+        subject2.onNext("r")    // 输出 r
         
         print("*****zip*****")
         /// zip: 将多个可观察序列合并为一个新的可观察序列。
@@ -97,47 +99,47 @@ class ViewController: UIViewController {
         /// 等待所有源序列都产生元素后才组合输出
         /// 按索引位置一一对应进行组合
         /// 只有两个序列同时有值的时候才会响应,否则存值
-//        let stringSubject = PublishSubject<String>()
-//        let intSubject = PublishSubject<Int>()
-//        
-//        Observable.zip(stringSubject, intSubject) { stringElement, intElement in
-//            "\(stringElement) \(intElement)"
-//        }.subscribe(onNext: { value in
-//            print(value)
-//        }).disposed(by: disposeBag)
-//        
-//        stringSubject.onNext("K")
-//        stringSubject.onNext("M")
-//        stringSubject.onNext("F") // 到这里存储了 K M F 但是不会响应,除非另一个响应
-//
-//        intSubject.onNext(1) // 勾出一个 输出 K 1
-//        intSubject.onNext(2) // 勾出另一个 输出 M 2
-//        stringSubject.onNext("i") // 存一个
-//        intSubject.onNext(3) // 勾出一个 输出 F 3
-//        intSubject.onNext(4) // 勾出一个 输出 i 4
-//        
-//        stringSubject.onNext("C") // 存一个
-//        intSubject.onNext(5) // 勾出一个  输出 C 5
+        let stringSubject = PublishSubject<String>()
+        let intSubject = PublishSubject<Int>()
+        
+        Observable.zip(stringSubject, intSubject) { stringElement, intElement in
+            "\(stringElement) \(intElement)"
+        }.subscribe(onNext: { value in
+            print(value)
+        }).disposed(by: disposeBag)
+        
+        stringSubject.onNext("K")
+        stringSubject.onNext("M")
+        stringSubject.onNext("F") // 到这里存储了 K M F 但是不会响应,除非另一个响应
+        
+        intSubject.onNext(1) // 勾出一个 输出 K 1
+        intSubject.onNext(2) // 勾出另一个 输出 M 2
+        stringSubject.onNext("i") // 存一个
+        intSubject.onNext(3) // 勾出一个 输出 F 3
+        intSubject.onNext(4) // 勾出一个 输出 i 4
+        
+        stringSubject.onNext("C") // 存一个
+        intSubject.onNext(5) // 勾出一个  输出 C 5
         
         print("*****combineLatest*****")
         /// combineLatest: 将多个可观察序列合并为一个新的可观察序列。
         /// combineLatest 是一个高阶函数，接收多个可观察序列作为参数，将多个可观察序列合并为一个新的可观察序列。
         /// 相对于zip来说，combineLatest 会覆盖旧元素，只保留新元素，当源序列都有值的时候，才会响应。
         /// 应用非常频繁: 比如账户和密码同时满足->才能登陆. 不关系账户密码怎么变化的只要查看最后有值就可以 loginEnable
-//        let stringSub = PublishSubject<String>()
-//        let intSub = PublishSubject<Int>()
-//        
-//        Observable.combineLatest(stringSub, intSub) { strElement, intElement in
-//            "\(strElement) \(intElement)"
-//        }
-//        .subscribe(onNext: { print($0) })
-//        .disposed(by: disposeBag)
-//        
-//        stringSub.onNext("K")   // 保存 K
-//        stringSub.onNext("M")   // 覆盖 K，保存 M
-//        intSub.onNext(1) // stringSub 有值，输出 M 1
-//        intSub.onNext(2) // 覆盖 1， 保存 2，stringSub 有值，输出 M 2
-//        stringSub.onNext("F") // 覆盖 M，保存 F，intSub 有值，输出 F 2
+        let stringSub = PublishSubject<String>()
+        let intSub = PublishSubject<Int>()
+        
+        Observable.combineLatest(stringSub, intSub) { strElement, intElement in
+            "\(strElement) \(intElement)"
+        }
+        .subscribe(onNext: { print($0) })
+        .disposed(by: disposeBag)
+        
+        stringSub.onNext("K")   // 保存 K
+        stringSub.onNext("M")   // 覆盖 K，保存 M
+        intSub.onNext(1) // stringSub 有值，输出 M 1
+        intSub.onNext(2) // 覆盖 1， 保存 2，stringSub 有值，输出 M 2
+        stringSub.onNext("F") // 覆盖 M，保存 F，intSub 有值，输出 F 2
         
         print("*****switchLatest*****")
         /// switchLatest: 将一个可观察序列中的元素转换为另一个可观察序列，并将所有这些可观察序列合并为一个新的可观察序列。
@@ -332,7 +334,7 @@ class ViewController: UIViewController {
             .subscribe { value in
                 print(value)
             }.disposed(by: disposeBag)
-
+        
         print("*****elementAt*****")
         /// elementAt: 过滤掉所有元素，只保留指定索引的元素。
         /// elementAt 是一个高阶函数，接收一个索引作为参数，返回一个新的可观察序列。
@@ -384,7 +386,7 @@ class ViewController: UIViewController {
         print("*****takeWhile*****")
         /// takeWhile: 过滤元素，保留满足条件的元素。当 谓词首次返回 false 时，立即完成序列
         /// takeWhile 是一个高阶函数，接收一个闭包作为参数，闭包接收一个元素并返回一个布尔值。
-
+        
         Observable.of(1, 2, 3, 4, 5)
             .take(while: { value in
                 value > 3
@@ -408,7 +410,7 @@ class ViewController: UIViewController {
         sourceSequence.onNext("KF")
         sourceSequence.onNext("MC")
         sourceSequence.onNext("FZ")
-
+        
         referenceSequence.onNext("CL") // 条件一出来,下面就走不了
         
         sourceSequence.onNext("SG")
@@ -461,6 +463,220 @@ class ViewController: UIViewController {
         
         sourceSeq.onNext("LV")
         sourceSeq.onNext("SG")
+    }
+    
+    func testMathematicalAggregateOperators() {
+        print("*****toArray*****")
+        /// toArray: 将可观察序列转换为数组。输出一个数组，数组中包含所有元素。
+        Observable.range(start: 1, count: 30)
+            .toArray()
+            .subscribe(onSuccess: { item in
+                print(item)
+            }).disposed(by: disposeBag)
+        
+        print("*****reduce*****")
+        /// reduce: 将可观察序列转换为一个元素。输出一个元素，元素是通过闭包计算出来的。
+        /// reduce 是一个高阶函数，接收一个初始值和一个闭包作为参数，闭包接收两个参数，一个是初始值，一个是可观察序列中的元素，通过计算返回一个新的值。
+        /// reduce 会将初始值和可观察序列中的元素组合在一起，返回一个新的可观察序列。
+        Observable.of(10, 100, 1000)
+            .reduce(1, accumulator: { $0 + $1})
+            .subscribe(onNext: { print($0) })
+            .disposed(by: disposeBag)
+        
+        print("*****concat*****")
+        let subject1 = BehaviorSubject(value: "K")
+        let subject2 = BehaviorSubject(value: "1")
+        
+        let subjectsSubject = BehaviorSubject(value: subject1)
+        // 第一阶段：输出 K
+        subjectsSubject.concat()
+            .subscribe(onNext: { print($0) })
+            .disposed(by: disposeBag)
+        
+        subject1.onNext("A")    // ✅ 输出 A
+        subject1.onNext("B")    // ✅ 输出 B
+        
+        subjectsSubject.onNext(subject2)    // 将subject2 入队列等待subject1 完成后才会订阅
+        
+        subject2.onNext("2")    // 不输出
+        subject2.onNext("3")    // 不输出
+        
+        subject1.onCompleted() // subject2 必须要等subject1 完成了才能订阅到! 用来控制顺序 网络数据的异步
+        
+        subject2.onNext("4")    // ✅ 输出 4
+    }
+    
+    func testConnectableOperators() {
+//        testWithoutConnect()
+//        testPublishConnectableOperators()
+//        testReplayConnectOperators()
+        testMulticastConnectOperators()
+    }
+    
+    func testMulticastConnectOperators() {
+        print("*****multicast*****")
+        let netOB = Observable<Any>.create { (observer) -> Disposable in
+                sleep(2)// 模拟网络延迟
+                print("我开始请求网络了")
+                observer.onNext("请求到的网络数据")
+                observer.onNext("请求到的本地")
+                observer.onCompleted()
+                return Disposables.create {
+                    print("销毁回调了")
+                }
+            }.publish()
+        
+        netOB.subscribe(onNext: { (anything) in
+                print("订阅1:",anything)
+            })
+            .disposed(by: disposeBag)
+
+        // 我们有时候不止一次网络订阅,因为有时候我们的数据可能用在不同的额地方
+        // 所以在订阅一次 会出现什么问题?
+        netOB.subscribe(onNext: { (anything) in
+                print("订阅2:",anything)
+            })
+            .disposed(by: disposeBag)
+        
+        _ = netOB.connect()
+        
+        /*
+         我开始请求网络了
+         订阅1: 请求到的网络数据
+         订阅2: 请求到的网络数据
+         订阅1: 请求到的本地
+         订阅2: 请求到的本地
+         销毁回调了
+         */
+    }
+    
+    func testReplayConnectOperators() {
+        print("*****replay*****")
+        /// replay: 将可观察序列转换为一个 ConnectableObservableSequence。
+        /// replay 是一个高阶函数，接收一个参数，参数是一个整数，表示缓存的元素个数。
+        /// 首先拥有和publish一样的能力，共享 Observable sequence， 其次使用replay还需要我们传入一个参数（buffer size）来缓存已发送的事件，当有新的订阅者订阅了，会把缓存的事件发送给新的订阅者
+        /// 使用 队列缓存，队列中存储了 buffer size 个元素，超过 buffer size 个元素时，出队一个元素。缓存最新的事件
+        let interval = Observable<Int>.interval(.seconds(1), scheduler: MainScheduler.instance).replay(5)
+        
+        interval.subscribe(onNext: { print("订阅: 1, 事件: \($0)") })
+            .disposed(by: disposeBag)
+        
+        print("connect before")
+        delay(2) {
+            _ = interval.connect()
+            print("connect end")
+        }
+        delay(4) {
+            interval.subscribe(onNext: {
+                print("订阅: 2, 事件: \($0)")
+            }).disposed(by: self.disposeBag)
+        }
+        delay(8) {
+            interval.subscribe(onNext: { print("订阅: 3, 事件: \($0)") })
+                .disposed(by: self.disposeBag)
+        }
+        delay(20, closure: {
+            self.disposeBag = DisposeBag()
+        })
+        
+        /*
+         订阅: 1, 事件: 0
+         订阅: 2, 事件: 0
+         订阅: 1, 事件: 1
+         订阅: 2, 事件: 1
+         订阅: 1, 事件: 2
+         订阅: 2, 事件: 2
+         订阅: 1, 事件: 3
+         订阅: 2, 事件: 3
+         订阅: 1, 事件: 4
+         订阅: 2, 事件: 4
+         订阅: 3, 事件: 0   // 订阅: 3 从0开始，取决于 replay(5) 的参数
+         订阅: 3, 事件: 1
+         订阅: 3, 事件: 2
+         订阅: 3, 事件: 3
+         订阅: 3, 事件: 4
+         订阅: 1, 事件: 5   // 后续就开始同步了
+         订阅: 2, 事件: 5
+         订阅: 3, 事件: 5
+         订阅: 1, 事件: 6
+         订阅: 2, 事件: 6
+         订阅: 3, 事件: 6
+         订阅: 1, 事件: 7
+         订阅: 2, 事件: 7
+         订阅: 3, 事件: 7
+         订阅: 1, 事件: 8
+         订阅: 2, 事件: 8
+         订阅: 3, 事件: 8
+         */
+    }
+    
+    func testPublishConnectableOperators() {
+        print("*****testPublishConnect*****")
+        /// publish: 将可观察序列转换为一个 ConnectableObservableSequence。
+        /// 共享一个Observable的事件序列，避免创建多个Observable sequence。
+        /// 注意:需要调用connect之后才会开始发送事件
+        let interval = Observable<Int>.interval(.seconds(1), scheduler: MainScheduler.instance).publish()
+        
+        interval.subscribe(onNext: { print("订阅: 1, 事件: \($0)") })
+            .disposed(by: disposeBag)
+        
+        print("connect before")
+        delay(2) {
+            _ = interval.connect()
+            print("connect end")
+        }
+        delay(4) {
+            interval.subscribe(onNext: {
+                print("订阅: 2, 事件: \($0)")
+            }).disposed(by: self.disposeBag)
+        }
+        delay(6) {
+            interval.subscribe(onNext: { print("订阅: 3, 事件: \($0)") })
+                .disposed(by: self.disposeBag)
+        }
+        delay(10, closure: {
+            self.disposeBag = DisposeBag()
+        })
+        
+        /**
+            订阅: 1, 事件: 0
+            订阅: 1, 事件: 1
+            订阅: 2, 事件: 1
+            订阅: 1, 事件: 2
+            订阅: 2, 事件: 2
+            订阅: 1, 事件: 3
+            订阅: 2, 事件: 3
+            订阅: 3, 事件: 3
+         
+            订阅: 2 从1开始
+            订阅: 3 从3开始
+        */
+        // 但是后面来的订阅者，却无法得到之前已发生的事件
+    }
+    
+    func testWithoutConnect() {
+        print("*****testWithoutConnect*****")
+        let inteval = Observable<Int>.interval(.seconds(1), scheduler: MainScheduler.instance)
+        
+        inteval.subscribe(onNext: { print("订阅1 ： \($0)") }).disposed(by: disposeBag)
+        
+        delay(3) { [weak self] in
+            guard let self = self else { return }
+            inteval.subscribe(onNext: { print("订阅2 : \($0)")}).disposed(by: self.disposeBag)
+        }
+        
+        delay(10) { [weak self] in
+            guard let self = self else { return }
+            self.disposeBag = DisposeBag()
+        }
+        
+        // 发现有一个问题:在延时3s之后订阅的Subscription: 2的计数并没有和Subscription: 1一致，而是又从0开始了，如果想共享，怎么办?
+    }
+    
+    func delay(_ delay: Double, closure: @escaping () -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + delay, execute: {
+            closure()
+        })
     }
     
     func testRecursiveLock() {
