@@ -13,18 +13,20 @@ import RxCocoa
 
 class ViewController: UIViewController {
     
+    private let error = NSError(domain: "com.kaiser.rxswift", code: 10086)
     private var disposeBag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //        testRecursiveLock()
-        //        testCreateObservable()
-        //        testTransformOperators()
-        //        testConditionalOperators()
-        //        testCombinationOperators()
-        //        testMathematicalAggregateOperators()
-        testConnectableOperators()
+//        testRecursiveLock()
+//        testCreateObservable()
+//        testTransformOperators()
+//        testConditionalOperators()
+//        testCombinationOperators()
+//        testMathematicalAggregateOperators()
+//        testConnectableOperators()
+        testErrorHandlingOperators()
     }
     
     
@@ -677,6 +679,72 @@ class ViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + delay, execute: {
             closure()
         })
+    }
+    
+    func testErrorHandlingOperators() {
+        print("*****catchErrorJustReturn*****")
+        /// catchErrorJustReturn: 处理错误事件，返回一个新的可观察序列。
+//        let sequenceThatFails = PublishSubject<String>()
+//        
+//        sequenceThatFails
+//            .catchAndReturn("error.rxswift")
+//            .subscribe(onNext: { print($0) })
+//            .disposed(by: disposeBag)
+//        
+//        sequenceThatFails.onNext("K")
+//        sequenceThatFails.onNext("F")   // 正常序列发送成功的
+//        sequenceThatFails.onError(self.error)   //发送失败的序列,一旦订阅到位 返回我们之前设定的错误的预案
+        
+        print("*****catch*****")
+        /// catch: 处理错误事件，返回一个新的可观察序列。
+        /// catch 是一个高阶函数，接收一个闭包作为参数，闭包接收一个错误对象并返回一个新的可观察序列。
+//        let errorSubject = PublishSubject<String>()
+//        let recoverySequence = PublishSubject<String>()
+//        
+//        errorSubject
+//            .catch {
+//                print("Error:", $0)
+//                return recoverySequence  // 获取到了错误序列-我们在中间的闭包操作处理完毕,返回给用户需要的序列(showAlert)
+//            }
+//            .subscribe { print($0) }
+//            .disposed(by: disposeBag)
+//        
+//        errorSubject.onNext("C")
+//        errorSubject.onNext("L") // 正常序列发送成功的
+//        errorSubject.onError(error) // 发送失败的序列
+//        
+//        recoverySequence.onNext("MC")
+        
+        print("*****retry*****")
+        var count = 1
+        let retryObservable = Observable<String>.create { observer in
+            observer.onNext("A")
+            observer.onNext("B")
+            if count < 5 {
+                observer.onError(self.error)
+                print("发生错误了")
+                count += 1
+            }
+            observer.onNext("C")
+            observer.onNext("D")
+            observer.onCompleted()
+            return Disposables.create()
+        }
+        
+        retryObservable
+            .retry()
+            .subscribe(onNext: { print($0) })
+            .disposed(by: disposeBag)
+        
+        /*
+         A
+         B
+         发生错误了
+         A
+         B
+         C
+         D
+         */
     }
     
     func testRecursiveLock() {
