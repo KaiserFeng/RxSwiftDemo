@@ -16,18 +16,49 @@ class ViewController: UIViewController {
     private let error = NSError(domain: "com.kaiser.rxswift", code: 10086)
     private var disposeBag = DisposeBag()
     
+    private let textLabel: UILabel! = {
+        let label = UILabel()
+        label.text = "Hello world"
+        label.textColor = .black
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 20)
+        label.backgroundColor = .white
+        return label
+    }()
+    
+    private let inputTF: UITextField! = {
+        let textField = UITextField()
+        textField.placeholder = "请输入"
+        textField.borderStyle = .roundedRect
+        textField.textAlignment = .center
+        textField.font = .systemFont(ofSize: 20)
+        textField.backgroundColor = .white
+        return textField
+    }()
+    
+    private let btn: UIButton! = {
+        let button = UIButton(type: .system)
+        button.setTitle("点击", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .blue
+        button.layer.cornerRadius = 5
+        button.layer.masksToBounds = true
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
 //        testRecursiveLock()
 //        testCreateObservable()
-        testTransformOperators()
+//        testTransformOperators()
 //        testConditionalOperators()
 //        testCombinationOperators()
 //        testMathematicalAggregateOperators()
 //        testConnectableOperators()
 //        testErrorHandlingOperators()
 //        testDebuggingOperators()
+        testDriverOperators()
     }
     
     
@@ -814,6 +845,50 @@ class ViewController: UIViewController {
 //        subscription2.dispose()
 //
 //        print(RxSwift.Resources.total)
+    }
+    
+    func testDriverOperators() {
+        print("*****Driver*****")
+        /// Driver: 是一个特殊的可观察序列，具有以下特点：
+        /// 1. 只能在主线程上工作
+        /// 2. 不会发生错误事件
+        /// 3. 可以共享序列
+        /// 4. 可以使用驱动器的操作符
+        ///
+        /// Driver 主要用于 UI 相关的响应式编程场景，通过其特性保证了 UI 操作的安全性和可维护性。它是 RxSwift 中处理 UI 事件流的最佳选择。
+        view.addSubview(textLabel)
+        view.addSubview(inputTF)
+        view.addSubview(btn)
+        textLabel.frame = CGRect(x: 0, y: 100, width: 200, height: 50)
+        inputTF.frame = CGRect(x: 0, y: 200, width: 200, height: 50)
+        btn.frame = CGRect(x: 0, y: 300, width: 200, height: 50)
+        
+        let result = inputTF.rx.text.orEmpty
+            .asDriver()
+            .flatMap { value in
+                return self.dealWithData(input: value).asDriver(onErrorJustReturn: "error kaiser")
+        }
+        
+        let _ = result.map({
+            print($0)
+            return "长度：\(($0 as! String).count)"
+        }).drive(textLabel.rx.text)
+        let _ = result.map( { "\($0 as! String)" } ).drive(btn.rx.title())
+    }
+    
+    func dealWithData(input: String) -> Observable<Any> {
+        print("请求网络了 \(Thread.current)")
+        return Observable<Any>.create { observer in
+            if input == "1234" {
+                observer.onError(NSError.init(domain: "com.kaiser.rx", code: 10086, userInfo: nil))
+            }
+            DispatchQueue.global().async {
+                print("发送之前 看看线程 \(Thread.current)")
+                observer.onNext("输入了 \(input)")
+                observer.onCompleted()
+            }
+            return Disposables.create()
+        }
     }
     
     func testRecursiveLock() {
