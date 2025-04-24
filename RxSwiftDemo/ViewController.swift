@@ -21,12 +21,13 @@ class ViewController: UIViewController {
         
 //        testRecursiveLock()
 //        testCreateObservable()
-//        testTransformOperators()
+        testTransformOperators()
 //        testConditionalOperators()
 //        testCombinationOperators()
 //        testMathematicalAggregateOperators()
 //        testConnectableOperators()
-        testErrorHandlingOperators()
+//        testErrorHandlingOperators()
+//        testDebuggingOperators()
     }
     
     
@@ -684,36 +685,36 @@ class ViewController: UIViewController {
     func testErrorHandlingOperators() {
         print("*****catchErrorJustReturn*****")
         /// catchErrorJustReturn: 处理错误事件，返回一个新的可观察序列。
-//        let sequenceThatFails = PublishSubject<String>()
-//        
-//        sequenceThatFails
-//            .catchAndReturn("error.rxswift")
-//            .subscribe(onNext: { print($0) })
-//            .disposed(by: disposeBag)
-//        
-//        sequenceThatFails.onNext("K")
-//        sequenceThatFails.onNext("F")   // 正常序列发送成功的
-//        sequenceThatFails.onError(self.error)   //发送失败的序列,一旦订阅到位 返回我们之前设定的错误的预案
+        let sequenceThatFails = PublishSubject<String>()
+        
+        sequenceThatFails
+            .catchAndReturn("error.rxswift")
+            .subscribe(onNext: { print($0) })
+            .disposed(by: disposeBag)
+        
+        sequenceThatFails.onNext("K")
+        sequenceThatFails.onNext("F")   // 正常序列发送成功的
+        sequenceThatFails.onError(self.error)   //发送失败的序列,一旦订阅到位 返回我们之前设定的错误的预案
         
         print("*****catch*****")
         /// catch: 处理错误事件，返回一个新的可观察序列。
         /// catch 是一个高阶函数，接收一个闭包作为参数，闭包接收一个错误对象并返回一个新的可观察序列。
-//        let errorSubject = PublishSubject<String>()
-//        let recoverySequence = PublishSubject<String>()
-//        
-//        errorSubject
-//            .catch {
-//                print("Error:", $0)
-//                return recoverySequence  // 获取到了错误序列-我们在中间的闭包操作处理完毕,返回给用户需要的序列(showAlert)
-//            }
-//            .subscribe { print($0) }
-//            .disposed(by: disposeBag)
-//        
-//        errorSubject.onNext("C")
-//        errorSubject.onNext("L") // 正常序列发送成功的
-//        errorSubject.onError(error) // 发送失败的序列
-//        
-//        recoverySequence.onNext("MC")
+        let errorSubject = PublishSubject<String>()
+        let recoverySequence = PublishSubject<String>()
+        
+        errorSubject
+            .catch {
+                print("Error:", $0)
+                return recoverySequence  // 获取到了错误序列-我们在中间的闭包操作处理完毕,返回给用户需要的序列(showAlert)
+            }
+            .subscribe { print($0) }
+            .disposed(by: disposeBag)
+        
+        errorSubject.onNext("C")
+        errorSubject.onNext("L") // 正常序列发送成功的
+        errorSubject.onError(error) // 发送失败的序列
+        
+        recoverySequence.onNext("MC")
         
         print("*****retry*****")
         var count = 1
@@ -745,6 +746,74 @@ class ViewController: UIViewController {
          C
          D
          */
+    }
+    
+    func testDebuggingOperators() {
+        testDebug()
+//        testResourcesTotal()
+    }
+    
+    func testDebug() {
+        print("*****debug*****")
+        var count = 1
+        let sequenceThatErrors = Observable<String>.create { observer in
+            observer.onNext("K")
+            observer.onNext("a")
+            observer.onNext("i")
+            
+            if count < 5 {
+                observer.onError(self.error)
+                print("错误序列来了")
+                count += 1
+            }
+            
+            observer.onNext("s")
+            observer.onNext("e")
+            observer.onNext("r")
+            observer.onCompleted()
+            
+            return Disposables.create()
+        }
+        
+        sequenceThatErrors
+            .retry(3)
+            .debug()
+            .subscribe(onNext: { print($0) })
+            .disposed(by: disposeBag)
+        
+        print("*****debug map*****")
+        let ob = Observable.of(1, 2, 3, 4, 5)
+        let _ = ob.filter({ num in
+            num > 2
+        }).map { num in
+            num + 2
+        }.debug().subscribe(onNext: { next in
+            print(next)
+        }).disposed(by: disposeBag)
+    }
+    
+    func testResourcesTotal() {
+        print("*****RxSwift.Resources.total*****")
+
+//        print(RxSwift.Resources.total)
+//
+//        let subject = BehaviorSubject(value: "Kaiser")
+//
+//        let subscription1 = subject.subscribe(onNext: { print($0) })
+//
+//        print(RxSwift.Resources.total)
+//
+//        let subscription2 = subject.subscribe(onNext: { print($0) })
+//
+//        print(RxSwift.Resources.total)
+//
+//        subscription1.dispose()
+//
+//        print(RxSwift.Resources.total)
+//
+//        subscription2.dispose()
+//
+//        print(RxSwift.Resources.total)
     }
     
     func testRecursiveLock() {
