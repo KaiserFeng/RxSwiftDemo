@@ -50,7 +50,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
 //        testRecursiveLock()
-//        testCreateObservable()
+        testCreateObservable()
 //        testTransformOperators()
 //        testConditionalOperators()
 //        testCombinationOperators()
@@ -58,11 +58,46 @@ class ViewController: UIViewController {
 //        testConnectableOperators()
 //        testErrorHandlingOperators()
 //        testDebuggingOperators()
-        testDriverOperators()
+//        testDriverOperators()
     }
     
     
     func testCreateObservable() {
+        print("********empty********")
+        /// empty: 创建一个空的可观察序列。
+        let emptyOB = Observable<Int>.empty()
+        emptyOB.subscribe(onNext: { print($0) }, onError: { print("Error: \($0)")}, onCompleted: { print("complete")}).disposed(by: disposeBag)
+        
+        print("********just********")
+        /// just: 创建一个只发出一个元素的可观察序列。
+        /// just 是一个高阶函数，接收一个元素作为参数，将元素添加到序列中。
+        /// just 是一个同步操作符，它会立即发出元素。
+        let array = ["Kaiser", "MC"]
+        let justOB = Observable<[String]>.just(array)
+        justOB.subscribe(onNext: { print($0) }).disposed(by: disposeBag)
+        
+        print("********of********")
+        Observable<Int>.of(1, 2, 3).subscribe(onNext: { print($0) }).disposed(by: disposeBag)
+        Observable<[String]>.of(["a", "b", "c"], ["d"]).subscribe(onNext: { print($0) }).disposed(by: disposeBag)
+        Observable<[String:String]>.of(["k1": "v1", "k2": "v2"]).subscribe(onNext: { print($0) }).disposed(by: disposeBag)
+        
+        print("********from********")
+        Observable<Int>.from([1, 2, 3, 4, 5]).subscribe(onNext: { print("订阅：",$0) }).disposed(by: disposeBag)
+        
+        print("********defer********")
+        /// 在观察者订阅之前不要创建Observable，并为每个观察者创建一个新的Observable
+        let isOdd = true
+        Observable.deferred({ () -> Observable<Int> in
+            if isOdd {
+                return Observable.of(1, 3, 5)
+            }
+            return Observable.of(2, 4, 6)
+        })
+        .subscribe(onNext: {print($0) })
+        .disposed(by: disposeBag)
+        
+        print("********************")
+        
         let ob = Observable<String>.create { observer in
             observer.onNext("Hello world")
             observer.onCompleted()
