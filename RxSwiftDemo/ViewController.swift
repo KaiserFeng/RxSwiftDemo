@@ -96,8 +96,38 @@ class ViewController: UIViewController {
         .subscribe(onNext: {print($0) })
         .disposed(by: disposeBag)
         
-        print("********************")
+        print("********rang********")
+        /// range: 创建一个发出指定范围内整数的可观察序列。
+        Observable.range(start: 2, count: 5).subscribe(onNext: { print($0) }).disposed(by: disposeBag)
         
+        print("********generate********")
+        Observable.generate(initialState: 0, condition: { $0 < 10 }, iterate: { $0 + 2}).subscribe(onNext: {
+            print($0)
+        }).disposed(by: disposeBag)
+        
+        print("********timer********")
+//        Observable<Int>.timer(.seconds(1), period: .seconds(5), scheduler: MainScheduler.instance).subscribe(onNext: {
+//            print($0)
+//        }).disposed(by: disposeBag)
+//        
+//        Observable<Int>.timer(.seconds(1), scheduler: MainScheduler.instance).subscribe(onNext: {
+//            print($0)
+//        }).disposed(by: disposeBag)
+        
+        print("********interval********")
+//        Observable<Int>.interval(.seconds(1), scheduler: MainScheduler.instance).subscribe(onNext: {
+//            print($0)
+//        }).disposed(by: disposeBag)
+        
+        print("********repeatElement********")
+//        Observable<Int>.repeatElement(5).subscribe(onNext: {
+//            print($0)
+//        }).disposed(by: disposeBag)
+        
+        print("********never********")
+        Observable<String>.never().subscribe(onNext: { print($0) }, onError: { print($0) }, onCompleted: { print("never completed") }).disposed(by: disposeBag)
+        
+        print("*********create***********")
         let ob = Observable<String>.create { observer in
             observer.onNext("Hello world")
             observer.onCompleted()
@@ -110,10 +140,6 @@ class ViewController: UIViewController {
             print(error)
         }, onCompleted: {
             print("completed")
-        }).disposed(by: disposeBag);
-        
-        let _ = ob.subscribe(onNext: { next in
-            print(next)
         }).disposed(by: disposeBag);
     }
     
